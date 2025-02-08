@@ -1,0 +1,29 @@
+/* Register.css */
+
+.login-container .register-container {
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 70%; /* Increase the width */
+}
+
+@media (min-width: 1200px) {
+    .login-container .register-container {
+        width: 60%; /* Increase the width */
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .login-container .register-container {
+        width: 80%; /* Increase the width */
+    }
+}
+
+@media (max-width: 767px) {
+    .login-container .register-container {
+        width: 100%; /* Increase the width */
+    }
+}
