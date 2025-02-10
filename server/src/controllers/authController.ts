@@ -1,21 +1,38 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
-import { generateToken } from '../services/authService';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
+
+interface AuthenticatedRequest extends Request {
+    user?: { id: string; email: string; name: string };
+}
+
+const generateToken = (userId: string): string => {
+    return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
+};
 
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
 
+        if (!email || !password) {
+            res.status(400).json({ message: 'Email and password are required' });
+            return;
+        }
+
         const user = await prisma.user.findUnique({
-            where: {
-                email
-            }
+            where: { email }
         });
 
-        if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+        if (!user) {
+            res.status(401).json({ message: 'Invalid credentials' });
+            return;
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+        if (!isPasswordValid) {
             res.status(401).json({ message: 'Invalid credentials' });
             return;
         }
@@ -25,19 +42,26 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         res.cookie('jwt', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000 
         });
 
         res.json({ token, user });
-    } catch (error) {
+    } catch (error: any) {
+        console.error('Error during login:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
 
+
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password, fullName } = req.body;
+
+        if (!email || !password || !fullName) {
+            res.status(400).json({ message: 'Email, password and full name are required' });
+            return;
+        }
 
         const existingUser = await prisma.user.findUnique({
             where: {
@@ -77,13 +101,30 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
     try {
-        res.clearCookie('jwt', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        res.cookie('jwt', '', { maxAge: 0 });
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const getAuthUser = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { id: true, email: true, name: true },
         });
 
-        res.json({ message: 'Logged out successfully' });
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }

@@ -3,26 +3,22 @@ import authRoutes from './routes/authRoutes';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 
 dotenv.config({
-  path: path.resolve(
-    __dirname,
-    process.env.NODE_ENV === 'production'
-      ? '.env.production'
-      : '.env.development'
-  )
+  path: path.resolve(__dirname, '../.env')
 });
-
-const corsOptions = {
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    optionsSuccessStatus: 200
-};
 
 const app = express();
 
-app.use(cors(corsOptions));
+app.use(
+  cors({ 
+    origin: 'http://localhost:3000',
+    credentials: true  
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 
