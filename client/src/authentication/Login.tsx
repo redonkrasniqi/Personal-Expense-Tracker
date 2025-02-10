@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../services/authService';
 import './style/Register.css';
 
-const Login: React.FC = () => {
+interface LoginProps {
+    onSuccess: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
-    const handleSubmit = (values: { email: string; password: string }) => {
-        console.log('Email:', values.email);
-        console.log('Password:', values.password);
+    const handleSubmit = async (values: { email: string; password: string }) => {
+        try {
+            const input = { email: values.email, password: values.password };
+            const response = await login(input);
+            onSuccess();
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
     };
-
+    
     return (
         <div className="login-container">
             <h2 className="login-title">Login to Your Account</h2>

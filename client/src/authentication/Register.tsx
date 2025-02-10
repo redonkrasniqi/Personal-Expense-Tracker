@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import './style/Register.css';
 
-const Register: React.FC = () => {
+interface RegisterProps {
+    onSuccess: () => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -12,6 +16,7 @@ const Register: React.FC = () => {
         console.log('Full Name:', values.fullName);
         console.log('Email:', values.email);
         console.log('Password:', values.password);
+        onSuccess();
     };
 
     return (

@@ -1,40 +1,49 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+// AuthContext.tsx
+import { createContext, useContext, useEffect, useState } from 'react';
+import apiClient from '../services/apiClient';
 
-interface AuthContextType {
+type AuthContextType = {
   isAuthenticated: boolean;
-  login: (token: string) => void;
-  logout: () => void;
-}
+  isLoading: boolean;
+  checkAuth: () => Promise<void>;
+  logout: () => Promise<void>;
+};
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkAuth = async () => {
+    try {
+      await apiClient.get('/auth/me'); // Create this endpoint on your backend
+      setIsAuthenticated(true);
+    } catch (err) {
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+      setIsAuthenticated(false);
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-    }
+    checkAuth();
   }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem("token", token);
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
-  };
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, checkAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext) as AuthContextType;
-};
+export const useAuth = () => useContext(AuthContext);

@@ -21,6 +21,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         }
 
         const token = generateToken(user.id);
+
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
+            maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+
         res.json({ token, user });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
@@ -53,8 +61,30 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         });
 
         const token = generateToken(user.id);
+
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
+            maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+        
         res.json({ token, user });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+    try {
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        });
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

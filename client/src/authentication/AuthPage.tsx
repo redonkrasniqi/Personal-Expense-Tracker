@@ -1,20 +1,44 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Button, Card } from 'antd';
 import Login from './Login';
 import Register from './Register';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage: React.FC = () => {
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = React.useState(true);
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
-    const toggleAuthMode = () => {
-        setIsLogin(!isLogin);
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]);
+
+    const handleSuccess = () => {
+        navigate('/dashboard');
     };
 
     return (
         <Card style={{ width: 300, margin: 'auto', marginTop: '100px' }}>
-            {isLogin ? <Login /> : <Register />}
-            <Button type="link" onClick={toggleAuthMode} style={{ marginTop: '20px', color: '#1890ff', fontWeight: 'bold' }}>
-                {isLogin ? 'Switch to Register' : 'Switch to Login'}
+            {isLogin ? (
+                <Login onSuccess={handleSuccess} />
+            ) : (
+                <Register onSuccess={() => {
+                    handleSuccess();
+                    // Optional: Switch back to login after successful registration
+                    setIsLogin(true);
+                }} />
+            )}
+            
+            <Button 
+                type="link" 
+                onClick={() => setIsLogin(!isLogin)}
+                style={{ marginTop: '20px', color: '#1890ff', fontWeight: 'bold' }}
+            >
+                {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
             </Button>
         </Card>
     );

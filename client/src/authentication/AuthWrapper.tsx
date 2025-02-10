@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
