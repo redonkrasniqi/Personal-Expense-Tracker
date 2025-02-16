@@ -58,10 +58,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { email, password, fullName } = req.body;
+        const { email, password, fullName, currencyId } = req.body;
+        console.log("request body: ", req.body)
 
-        if (!email || !password || !fullName) {
-            res.status(400).json({ message: 'Email, password and full name are required' });
+        if (!email || !password || !fullName || !currencyId) {
+            res.status(400).json({ message: 'Email, password, full name and currency are required' });
             return;
         }
 
@@ -82,7 +83,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             data: {
                 email,
                 passwordHash,
-                name: fullName
+                name: fullName,
+                currencyId
             }
         });
 

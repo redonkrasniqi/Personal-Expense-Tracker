@@ -1,35 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Select } from 'antd';
 import './style/Register.css';
 import { useAuth } from '../services/useAuth';
+import { fetchCurrencies } from '../services/currencyService';
 
 interface RegisterProps {
     onSuccess: () => void;
+}
+
+type Currency = {
+    id: string,
+    name: string,
+    symbol: string,
 }
 
 const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
     const { register } = useAuth();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
-    const [currency, setCurrency] = useState('')
+    const [currency, setCurrency] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    const currencies = [
-        { id: "1", name: "US Dollar", symbol: "USD" },
-        { id: "2", name: "Euro", symbol: "EUR" },
-        { id: "3", name: "British Pound", symbol: "GBP" },
-        { id: "4", name: "Japanese Yen", symbol: "JPY" },
-        { id: "5", name: "Australian Dollar", symbol: "AUD" }
-    ];
-    
+    const [currencies, setCurrencies] = useState<Currency[]>([]);
 
-    const handleSubmit = async (values: { email: string; password: string, fullName: string }) => {
+    useEffect(() => {
+        const loadCurrencies = async () => {
+            try {
+                const data = await fetchCurrencies();
+                setCurrencies(data.data);
+            } catch (error) {
+                console.error('Failed to fetch currencies:', error);
+            }
+        };
+
+        loadCurrencies();
+    }, []);
+
+    const handleSubmit = async (values: { email: string; password: string, fullName: string, currency: string }) => {
         if (password !== confirmPassword) {
             return;
         }
         try {
-            const input = { email: values.email, password: values.password, fullName: values.fullName };
+            const input = { email: values.email, password: values.password, fullName: values.fullName, currencyId: values.currency };
             const response = await register(input);
             onSuccess();
         } catch (error) {
@@ -72,7 +85,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
                         onChange={setCurrency} 
                         value={currency}
                     >
-                        {currencies.map(({ id, name, symbol }) => (
+                        {Array.isArray(currencies) && currencies.map(({ id, name, symbol }) => (
                             <Select.Option key={id} value={id}>
                                 {symbol} - {name}
                             </Select.Option>
