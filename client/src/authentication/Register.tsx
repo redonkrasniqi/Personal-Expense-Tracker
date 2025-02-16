@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, Select } from 'antd';
 import './style/Register.css';
 import { useAuth } from '../services/useAuth';
 
@@ -11,8 +11,18 @@ const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
     const { register } = useAuth();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
+    const [currency, setCurrency] = useState('')
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    const currencies = [
+        { id: "1", name: "US Dollar", symbol: "USD" },
+        { id: "2", name: "Euro", symbol: "EUR" },
+        { id: "3", name: "British Pound", symbol: "GBP" },
+        { id: "4", name: "Japanese Yen", symbol: "JPY" },
+        { id: "5", name: "Australian Dollar", symbol: "AUD" }
+    ];
+    
 
     const handleSubmit = async (values: { email: string; password: string, fullName: string }) => {
         if (password !== confirmPassword) {
@@ -51,6 +61,23 @@ const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
+                </Form.Item>
+                <Form.Item
+                    label="Currency"
+                    name="currency"
+                    rules={[{ required: true, message: 'Please select a currency!' }]}
+                >
+                    <Select 
+                        placeholder="Select a currency"
+                        onChange={setCurrency} 
+                        value={currency}
+                    >
+                        {currencies.map(({ id, name, symbol }) => (
+                            <Select.Option key={id} value={id}>
+                                {symbol} - {name}
+                            </Select.Option>
+                        ))}
+                    </Select>
                 </Form.Item>
                 <Form.Item
                     label="Password"

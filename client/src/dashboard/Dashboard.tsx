@@ -1,8 +1,25 @@
+import { Button } from 'antd';
+import NewTransaction from './transactions/NewTransaction';
 import '../App.css';
+import { useState } from 'react';
 
 const Dashboard = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleModalClose = () => {
+    setModalVisible(false)
+  }
+
+  const handleNewTransaction = () => {
+    console.log("This is the new transaction")
+  }
+
   return (
     <div className="App">
+      <Button onClick={() => setModalVisible(true)}>
+        <p>Add Expense</p>
+      </Button>
+      <NewTransaction visible={modalVisible} onClose={handleModalClose} onSubmit={handleNewTransaction}/>
       <h1>Welcome to the Dashboard</h1>
       <p>This dashboard is designed to help you track your personal expenses efficiently. By using this tool, you can gain insights into your spending habits and make informed financial decisions.</p>
       <h2>Features</h2>

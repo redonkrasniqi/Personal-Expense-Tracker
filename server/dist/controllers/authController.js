@@ -39,50 +39,57 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.register = exports.login = void 0;
-var bcryptjs_1 = __importDefault(require("bcryptjs"));
+exports.getAuthUser = exports.logout = exports.register = exports.login = void 0;
 var client_1 = require("@prisma/client");
-var authService_1 = require("../services/authService");
+var bcryptjs_1 = __importDefault(require("bcryptjs"));
+var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var prisma = new client_1.PrismaClient();
+var generateToken = function (userId) {
+    return jsonwebtoken_1.default.sign({ userId: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
 var login = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, email, password, user, _b, token, error_1;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var _a, email, password, user, isPasswordValid, token, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _c.trys.push([0, 4, , 5]);
+                _b.trys.push([0, 3, , 4]);
                 _a = req.body, email = _a.email, password = _a.password;
+                if (!email || !password) {
+                    res.status(400).json({ message: 'Email and password are required' });
+                    return [2 /*return*/];
+                }
                 return [4 /*yield*/, prisma.user.findUnique({
-                        where: {
-                            email: email
-                        }
+                        where: { email: email }
                     })];
             case 1:
-                user = _c.sent();
-                _b = !user;
-                if (_b) return [3 /*break*/, 3];
-                return [4 /*yield*/, bcryptjs_1.default.compare(password, user.passwordHash)];
-            case 2:
-                _b = !(_c.sent());
-                _c.label = 3;
-            case 3:
-                if (_b) {
+                user = _b.sent();
+                if (!user) {
                     res.status(401).json({ message: 'Invalid credentials' });
                     return [2 /*return*/];
                 }
-                token = (0, authService_1.generateToken)(user.id);
+                return [4 /*yield*/, bcryptjs_1.default.compare(password, user.passwordHash)];
+            case 2:
+                isPasswordValid = _b.sent();
+                if (!isPasswordValid) {
+                    res.status(401).json({ message: 'Invalid credentials' });
+                    return [2 /*return*/];
+                }
+                token = generateToken(user.id);
                 res.cookie('jwt', token, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
+                    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 });
+                console.log("User ".concat(user.id, " just logged in!"));
                 res.json({ token: token, user: user });
-                return [3 /*break*/, 5];
-            case 4:
-                error_1 = _c.sent();
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _b.sent();
+                console.error('Error during login:', error_1);
                 res.status(500).json({ message: 'Internal server error' });
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
@@ -94,6 +101,10 @@ var register = function (req, res) { return __awaiter(void 0, void 0, void 0, fu
             case 0:
                 _b.trys.push([0, 4, , 5]);
                 _a = req.body, email = _a.email, password = _a.password, fullName = _a.fullName;
+                if (!email || !password || !fullName) {
+                    res.status(400).json({ message: 'Email, password and full name are required' });
+                    return [2 /*return*/];
+                }
                 return [4 /*yield*/, prisma.user.findUnique({
                         where: {
                             email: email
@@ -117,13 +128,14 @@ var register = function (req, res) { return __awaiter(void 0, void 0, void 0, fu
                     })];
             case 3:
                 user = _b.sent();
-                token = (0, authService_1.generateToken)(user.id);
+                token = generateToken(user.id);
                 res.cookie('jwt', token, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 });
+                console.log("User ".concat(user.id, " just registered!"));
                 res.json({ token: token, user: user });
                 return [3 /*break*/, 5];
             case 4:
@@ -138,17 +150,47 @@ exports.register = register;
 var logout = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         try {
-            res.clearCookie('jwt', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
-            });
+            res.cookie('jwt', '', { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 0 });
             res.json({ message: 'Logged out successfully' });
+            return [2 /*return*/];
         }
         catch (error) {
+            console.error(error);
             res.status(500).json({ message: 'Internal server error' });
+            return [2 /*return*/];
         }
         return [2 /*return*/];
     });
 }); };
 exports.logout = logout;
+var getAuthUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, error_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                if (!req.user) {
+                    res.json({ id: null });
+                    return [2 /*return*/];
+                }
+                return [4 /*yield*/, prisma.user.findUnique({
+                        where: { id: req.user.id },
+                        select: { id: true, email: true, name: true },
+                    })];
+            case 1:
+                user = _a.sent();
+                if (!user) {
+                    res.json({ id: null });
+                    return [2 /*return*/];
+                }
+                res.json(user);
+                return [3 /*break*/, 3];
+            case 2:
+                error_3 = _a.sent();
+                res.status(500).json({ message: 'Internal server error' });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getAuthUser = getAuthUser;

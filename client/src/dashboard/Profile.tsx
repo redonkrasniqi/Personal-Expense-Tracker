@@ -29,7 +29,7 @@ const Profile = () => {
 
     return (
         <Popover content={content} trigger="click" placement="bottomRight">
-            <img src={ProfileIcon} alt="Profile Icon" style={{ cursor: 'pointer', width: '70px' }} />
+            <img src={ProfileIcon} alt="Profile Icon" style={{ cursor: 'pointer', width: '100px' }} />
         </Popover>
     );
 }
