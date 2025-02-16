@@ -2,12 +2,12 @@ import React, { useEffect } from 'react';
 import { Button, Card } from 'antd';
 import Login from './Login';
 import Register from './Register';
-import { useAuth } from './AuthContext';
+import { useAuthentication } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const AuthPage: React.FC = () => {
     const [isLogin, setIsLogin] = React.useState(true);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuthentication();
     const navigate = useNavigate();
 
     // Redirect if already authenticated

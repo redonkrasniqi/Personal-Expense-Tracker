@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import { useAuth } from '../services/useAuth';
 import './style/Register.css';
 
 interface LoginProps {
@@ -9,6 +9,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onSuccess }) => {
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();

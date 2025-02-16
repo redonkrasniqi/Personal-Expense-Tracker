@@ -1,46 +1,32 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './authentication/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import AuthPage from "./authentication/AuthPage";
 import Dashboard from "./dashboard/Dashboard";
 import Navbar from "./dashboard/Navbar";
-import AuthWrapper from "./authentication/AuthWrapper";
-import { useAuth } from "./authentication/AuthContext";
 import "antd/dist/reset.css";
 
-const App = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route path="/login" element={<AuthPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <AuthWrapper>
-              <>
-                <Navbar />
-                <Dashboard />
-              </>
-            </AuthWrapper>
-          }
-        />
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<AuthPage />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <Dashboard />
+                </>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
-};
+}
 
 export default App;

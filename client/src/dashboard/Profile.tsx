@@ -1,20 +1,25 @@
 import { Popover, Button } from "antd";
 import ProfileIcon from "../static/ProfileIcon.png";
 import "./style/Profile.css";
-import { logout } from "../services/authService";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../services/useAuth";
 
 const Profile = () => {
-    const navigate = useNavigate();
+    const { user, logout } = useAuth();
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     };
 
     const content = (
         <div className="profile-container">
-            <h2>Redon Krasniqi</h2>
+            <>
+                <div style={{ fontSize: '1.5em', fontWeight: 'bold' }}>{user.name}</div>
+                <div style={{ color: '#666', fontSize: '0.8em' }}>{user.email}</div>
+            </>
             <div className="button-row">
                 <Button type="link">User Settings</Button>
                 <Button type="link" danger onClick={handleLogout}>Log out</Button>

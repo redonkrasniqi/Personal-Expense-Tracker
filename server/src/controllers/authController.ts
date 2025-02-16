@@ -46,6 +46,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             maxAge: 7 * 24 * 60 * 60 * 1000 
         });
 
+        console.log(`User ${user.id} just logged in!`);
+
         res.json({ token, user });
     } catch (error: any) {
         console.error('Error during login:', error);
@@ -92,6 +94,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Adjusted
             maxAge: 7 * 24 * 60 * 60 * 1000 
         });
+
+        console.log(`User ${user.id} just registered!`);
         
         res.json({ token, user });
     } catch (error) {
@@ -101,18 +105,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
     try {
-        res.cookie('jwt', '', { maxAge: 0 });
+        res.cookie('jwt', '', { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 0 });
         res.json({ message: 'Logged out successfully' });
+        return
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Internal server error' });
+        return
     }
 };
 
 export const getAuthUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user) {
-            res.status(401).json({ message: 'Unauthorized' });
-            return;
+            res.json({ id: null });
+            return
         }
 
         const user = await prisma.user.findUnique({
@@ -121,7 +128,8 @@ export const getAuthUser = async (req: AuthenticatedRequest, res: Response) => {
         });
 
         if (!user) {
-            res.status(404).json({ message: 'User not found' });
+            res.json({ id: null });
+            return
         }
 
         res.json(user);

@@ -1,11 +1,11 @@
 import apiClient from './apiClient';
 
-type LoginInput = {
+export type LoginInput = {
     email: string;
     password: string;
 }
 
-type RegisterInput = {
+export type RegisterInput = {
     email: string;
     password: string;
     fullName: string;
@@ -28,7 +28,7 @@ export const register = async (input: RegisterInput) => {
 }
 
 export const logout = async () => {
-    const response = await apiClient.post('/auth/logout', null, {
+    const response = await apiClient.post('/auth/logout', {}, {
         withCredentials: true
     });
     

@@ -1,10 +1,8 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuthentication } from './AuthContext';
 
 const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-
-  console.log("isAuthenticated: ", isAuthenticated)
+  const { isAuthenticated } = useAuthentication();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
