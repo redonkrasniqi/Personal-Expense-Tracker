@@ -1,12 +1,14 @@
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
-
+        
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
@@ -14,30 +16,32 @@ model User {
   passwordHash String
   Transactions Transaction[]
   currency     Currency      @relation(fields: [currencyId], references: [id])
-  currencyId   String        
+  currencyId   String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
 
 model Transaction {
-  id          String    @id @default(cuid())
-  amount      Float
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String
-  description String
-  category    Category? @relation(fields: [categoryId], references: [id])
-  categoryId  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  amount        Float
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  date          DateTime
+  description   String
+  paymentMethod String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Currency {
-  id           String   @id @default(cuid())
-  symbol       String
-  name         String
-  user         User[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(cuid())
+  symbol    String
+  name      String
+  user      User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {

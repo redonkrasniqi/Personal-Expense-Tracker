@@ -19,7 +19,7 @@ const Dashboard = () => {
       <Button onClick={() => setModalVisible(true)}>
         <p>Add Expense</p>
       </Button>
-      <NewTransaction visible={modalVisible} onClose={handleModalClose} onSubmit={handleNewTransaction}/>
+      <NewTransaction visible={modalVisible} onClose={handleModalClose} />
       <h1>Welcome to the Dashboard</h1>
       <p>This dashboard is designed to help you track your personal expenses efficiently. By using this tool, you can gain insights into your spending habits and make informed financial decisions.</p>
       <h2>Features</h2>

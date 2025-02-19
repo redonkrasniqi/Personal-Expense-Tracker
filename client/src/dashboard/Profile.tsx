@@ -21,8 +21,7 @@ const Profile = () => {
                 <div style={{ color: '#666', fontSize: '0.8em' }}>{user.email}</div>
             </>
             <div className="button-row">
-                <Button type="link">User Settings</Button>
-                <Button type="link" danger onClick={handleLogout}>Log out</Button>
+                <Button color="purple" variant="solid" onClick={handleLogout}>Log out</Button>
             </div>
         </div>
     );

@@ -5,7 +5,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     background-color: #fff;
-    width: 300px;
+    width: 200px;
 }
 
 .profile-container p {
@@ -24,7 +24,7 @@
 
 .button-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-top: 20px;
 }

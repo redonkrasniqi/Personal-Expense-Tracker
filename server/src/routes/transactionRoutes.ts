@@ -1,11 +1,12 @@
 import express from 'express';
-import { createTransaction } from '../controllers/transactionController';
+import { createTransaction, getAllTransactions } from '../controllers/transactionController';
+import { authenticateJWT } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.post('/create', createTransaction);
+router.post('/create', authenticateJWT, createTransaction);
 // router.post('/delete', deleteTransaction);
-// router.get('/all', getAllTransactions);
+router.get('/', authenticateJWT, getAllTransactions);
 // router.get('/:id', getTransactionById);
 // router.put('/update/:id', updateTransaction);
 // router.get('/category/:category', getTransactionsByCategory);
