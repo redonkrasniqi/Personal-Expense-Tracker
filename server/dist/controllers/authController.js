@@ -95,14 +95,15 @@ var login = function (req, res) { return __awaiter(void 0, void 0, void 0, funct
 }); };
 exports.login = login;
 var register = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, email, password, fullName, existingUser, passwordHash, user, token, error_2;
+    var _a, email, password, fullName, currencyId, existingUser, passwordHash, user, token, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 4, , 5]);
-                _a = req.body, email = _a.email, password = _a.password, fullName = _a.fullName;
-                if (!email || !password || !fullName) {
-                    res.status(400).json({ message: 'Email, password and full name are required' });
+                _a = req.body, email = _a.email, password = _a.password, fullName = _a.fullName, currencyId = _a.currencyId;
+                console.log("request body: ", req.body);
+                if (!email || !password || !fullName || !currencyId) {
+                    res.status(400).json({ message: 'Email, password, full name and currency are required' });
                     return [2 /*return*/];
                 }
                 return [4 /*yield*/, prisma.user.findUnique({
@@ -123,7 +124,8 @@ var register = function (req, res) { return __awaiter(void 0, void 0, void 0, fu
                         data: {
                             email: email,
                             passwordHash: passwordHash,
-                            name: fullName
+                            name: fullName,
+                            currencyId: currencyId
                         }
                     })];
             case 3:

@@ -36,23 +36,49 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTransaction = exports.createTransaction = void 0;
+exports.getAllTransactions = exports.deleteTransaction = exports.createTransaction = void 0;
+var client_1 = require("@prisma/client");
+var prisma = new client_1.PrismaClient();
 var createTransaction = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, amount, description, category;
-    return __generator(this, function (_b) {
-        try {
-            _a = req.body, amount = _a.amount, description = _a.description, category = _a.category;
-            if (!amount) {
-                res.status(400).json({ message: 'Transaction amount is required' });
-            }
-            console.log("the request body: ", req.body);
-            return [2 /*return*/];
+    var _a, amount, description, category, date, paymentMethod, userId, defaultCategoryId, transaction, error_1;
+    var _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                _c.trys.push([0, 2, , 3]);
+                _a = req.body, amount = _a.amount, description = _a.description, category = _a.category, date = _a.date, paymentMethod = _a.paymentMethod;
+                userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
+                if (!userId) {
+                    res.status(401).json({ message: 'User not authenticated' });
+                    return [2 /*return*/];
+                }
+                if (!amount || !description || !date) {
+                    res.status(400).json({ message: 'Transaction amount, description and date is required' });
+                    return [2 /*return*/];
+                }
+                defaultCategoryId = 'cm7cglhgm000008jj5n64clnk';
+                return [4 /*yield*/, prisma.transaction.create({
+                        data: {
+                            amount: amount,
+                            description: description,
+                            userId: userId,
+                            categoryId: category ? category : defaultCategoryId,
+                            date: date,
+                            paymentMethod: paymentMethod
+                        }
+                    })];
+            case 1:
+                transaction = _c.sent();
+                console.log("Transaction Created: ", transaction);
+                res.status(200).json({ message: 'Transaction created successfully!' });
+                return [2 /*return*/];
+            case 2:
+                error_1 = _c.sent();
+                console.error('Error creating a transaction:', error_1);
+                res.status(500).json({ message: 'Internal server error' });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
-        catch (error) {
-            console.error('Error creating a transaction:', error);
-            res.status(500).json({ message: 'Internal server error' });
-        }
-        return [2 /*return*/];
     });
 }); };
 exports.createTransaction = createTransaction;
@@ -75,3 +101,44 @@ var deleteTransaction = function (req, res) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.deleteTransaction = deleteTransaction;
+var getAllTransactions = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, transactions, error_2;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+                if (!userId) {
+                    res.status(401).json({ message: 'User not authenticated' });
+                    return [2 /*return*/];
+                }
+                return [4 /*yield*/, prisma.transaction.findMany({
+                        select: {
+                            id: true,
+                            amount: true,
+                            date: true,
+                            description: true,
+                            paymentMethod: true,
+                            category: true,
+                            createdAt: true
+                        },
+                        where: {
+                            userId: userId
+                        }
+                    })];
+            case 1:
+                transactions = _b.sent();
+                console.log("get all transactions results: ", transactions);
+                res.json(transactions);
+                return [3 /*break*/, 3];
+            case 2:
+                error_2 = _b.sent();
+                console.error('Error fetching user transactions:', error_2);
+                res.status(500).json({ message: 'Internal server error' });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getAllTransactions = getAllTransactions;
