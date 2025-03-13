@@ -1,8 +1,9 @@
 import React, { useState, createContext, useEffect } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Button, Checkbox, CheckboxChangeEvent, DatePicker } from 'antd';
-import { createTransaction, getAllTransactions } from '../../services/transactionService';
+import { createTransaction } from '../../services/transactionService';
 import CategoryForm from './CategoryForm';
 import moment from 'moment';
+import { useRefetch } from '../RefetchContext'; // Import useRefetch
 
 interface NewTransactionProps {
     visible: boolean;
@@ -10,26 +11,14 @@ interface NewTransactionProps {
 }
 
 export const CategoryVisibilityContext = createContext(false);
-export const CategoryVisibilitySetterContext = createContext((value: boolean) => {});
+export const CategoryVisibilitySetterContext = createContext((value: boolean) => { });
 
 const NewTransaction: React.FC<NewTransactionProps> = ({ visible, onClose }) => {
     const [form] = Form.useForm();
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [date, setDate] = useState<moment.Moment | null>(moment());
     const [showCategoryForm, setShowCategoryForm] = useState(false);
-
-    const transactions = async () => {
-        try {
-            const result = await getAllTransactions();
-            console.log("Results: ", result)
-        } catch (error) {
-            console.error("Error fetching user transactions: ", error)
-        }
-    }
-
-    useEffect(() => {
-        transactions()
-    }, [])
+    const { refetchTransactions } = useRefetch();
 
     const handleSubmit = async () => {
         try {
@@ -37,10 +26,10 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ visible, onClose }) => 
             const transactionData = { ...values, date, paymentMethod };
 
             const transaction = await createTransaction(transactionData);
-            console.log("this is the transaction that got on the front end: ", transaction);
             form.resetFields();
             setDate(moment());
             onClose();
+            await refetchTransactions();
         } catch (error) {
             console.error("Failed to create a transaction: ", error);
         }
@@ -100,7 +89,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ visible, onClose }) => 
                             >
                                 <DatePicker
                                     value={date}
-                                    onChange={handleDateChange} // Use the correct handler
+                                    onChange={handleDateChange}
                                     format="YYYY-MM-DD"
                                 />
                             </Form.Item>
@@ -132,12 +121,11 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ visible, onClose }) => 
                                     >
                                         Debit Card
                                     </Checkbox>
-                                    
                                 </div>
                             </Form.Item>
                         </Form>
 
-                        <CategoryForm form={form}/>
+                        <CategoryForm form={form} />
                     </Form>
                 </Modal>
             </CategoryVisibilityContext.Provider>

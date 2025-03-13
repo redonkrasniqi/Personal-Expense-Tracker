@@ -1,16 +1,25 @@
 import express from 'express';
-import { createTransaction, getAllTransactions } from '../controllers/transactionController';
-import { authenticateJWT } from '../middlewares/authMiddleware';
+import { 
+    createTransaction,
+    getAllTransactions,
+    deleteTransaction,
+    getTransactionById,
+    updateTransaction,
+    getTransactionsByCategory,
+    getTransactionsByDateRange,
+    getMonthlyTransactionSummary
+} from '../controllers';
+import { authenticateJWT } from '../middlewares';
 
 const router = express.Router();
 
 router.post('/create', authenticateJWT, createTransaction);
-// router.post('/delete', deleteTransaction);
+router.post('/:id', authenticateJWT, deleteTransaction);
 router.get('/', authenticateJWT, getAllTransactions);
-// router.get('/:id', getTransactionById);
-// router.put('/update/:id', updateTransaction);
-// router.get('/category/:category', getTransactionsByCategory);
-// router.get('/date-range', getTransactionsByDateRange);
-// router.get('/summary/monthly', getMonthlyTransactionSummary);
+router.get('/:id', authenticateJWT, getTransactionById);
+router.put('/update/:id', authenticateJWT, updateTransaction);
+router.get('/category/:category', authenticateJWT, getTransactionsByCategory);
+router.get('/date-range', authenticateJWT, getTransactionsByDateRange);
+router.get('/summary/monthly', authenticateJWT, getMonthlyTransactionSummary);
 
 export default router;

@@ -14,9 +14,25 @@ export const createTransaction = async (input: Transaction) => {
     return response.data;
 };
 
-export const getAllTransactions = async () => {
+const getAllTransactions = async () => {
     const response = await apiClient.get('/transaction/')
 
-    return response.data;
+    return await response.data;
 }
+export const fetchTranscations = async () => {
+    return await getAllTransactions();
+};
 
+export const deleteTransaction = async (id: string) => {
+    try {
+        const response = await apiClient.delete(`/transaction/${id}`);
+
+        if (response.status !== 204) {
+            console.warn("Delete request did not return 204:", response);
+        }
+        return response;
+    } catch (error) {
+        console.error("Error deleting transaction:", error);
+        throw error;
+    }
+};
