@@ -7,7 +7,8 @@ import {
     updateTransaction,
     getTransactionsByCategory,
     getTransactionsByDateRange,
-    getMonthlyTransactionSummary
+    getMonthlyTransactionSummary,
+    getPredictionAnalytics
 } from '../controllers';
 import { authenticateJWT } from '../middlewares';
 
@@ -21,5 +22,6 @@ router.put('/update/:id', authenticateJWT, updateTransaction);
 router.get('/category/:category', authenticateJWT, getTransactionsByCategory);
 router.get('/date-range', authenticateJWT, getTransactionsByDateRange);
 router.get('/summary/monthly', authenticateJWT, getMonthlyTransactionSummary);
+router.get('/predictive/analytics', authenticateJWT, getPredictionAnalytics);
 
 export default router;

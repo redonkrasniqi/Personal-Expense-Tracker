@@ -77,6 +77,10 @@ export const getAllTransactions = async(req: Request, res: Response): Promise<vo
             return;
         }
 
+        // Calculate date 3 months ago from current date
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
         const transactions = await prisma.transaction.findMany({
             select: {
                 id: true,
@@ -88,9 +92,17 @@ export const getAllTransactions = async(req: Request, res: Response): Promise<vo
                 createdAt: true
             },
             where: {
-                userId: userId
+                userId: userId,
+                date: {
+                    gte: threeMonthsAgo
+                }
             }
         })
+
+        // Sort transactions by date in ascending order
+        transactions.sort((a, b) => {
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+        });
 
         res.json(transactions)
     } catch (error) {
@@ -326,3 +338,146 @@ export const getMonthlyTransactionSummary = async (req: Request, res: Response):
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const getPredictionAnalytics = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id
+        if (!userId) {
+            res.status(401).json({ message: 'User not authenticated' })
+            return
+        }
+    
+        const now = new Date()
+        const sixMonthsAgo = new Date(now)
+        sixMonthsAgo.setMonth(now.getMonth() - 6)
+        const allTx = await prisma.transaction.findMany({
+            where: {
+                userId,
+                date: {
+                    gte: sixMonthsAgo
+                }
+            },
+            select: {
+                amount: true,
+                date: true,
+                description: true,
+                category: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })    
+
+        const threeMonthsAgo = new Date(now)
+        threeMonthsAgo.setMonth(now.getMonth() - 3)
+        const last3 = allTx.filter(t => new Date(t.date) >= threeMonthsAgo)
+        
+        const catSums: Record<string, number> = {}
+        last3.forEach(t => {
+            const cat = t.category?.name ?? 'Uncategorized'
+            catSums[cat] = (catSums[cat] || 0) + t.amount
+        })
+        
+        const categoryForecast: Record<string, number> = {}
+        const months = 3
+        for (const [cat, sum] of Object.entries(catSums)) {
+            categoryForecast[cat] = parseFloat((sum / months).toFixed(2))
+        }
+        
+        const sorted = last3
+            .map(t => ({ date: new Date(t.date), amount: t.amount }))
+            .sort((a, b) => a.date.getTime() - b.date.getTime())
+        
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        let nextTransaction = null;
+        if (sorted.length >= 2) {
+            const intervals = sorted.slice(1).map((t, i) =>
+                (t.date.getTime() - sorted[i].date.getTime()) / MS_PER_DAY
+            );
+            console.log("Raw intervals:", intervals);
+            
+            const s = [...intervals].sort((a, b) => a - b);
+            const q1 = s[Math.floor((s.length - 1) * 0.25)];
+            const q3 = s[Math.floor((s.length - 1) * 0.75)];
+            const iqr = q3 - q1;
+            const trimmed = s.filter(x => x >= q1 - 1.5 * iqr && x <= q3 + 1.5 * iqr);
+            const trimmedMean =
+                trimmed.reduce((sum, x) => sum + x, 0) / trimmed.length;
+            console.log("Trimmed mean interval:", trimmedMean);
+            
+            const totalWeight = intervals.reduce((sum, _, i) => sum + (i + 1), 0);
+            const weightedAvg =
+                intervals.reduce((sum, x, i) => sum + x * (i + 1), 0) / totalWeight;
+            console.log("Weighted avg interval:", weightedAvg);
+            
+            const avgInterval = 0.5 * trimmedMean + 0.5 * weightedAvg;
+            console.log("Blended interval:", avgInterval);
+            
+            const amounts = sorted.map(t => t.amount).sort((a, b) => a - b);
+            const m = Math.floor(amounts.length / 2);
+            const medianAmount =
+                amounts.length % 2
+                ? amounts[m]
+                : (amounts[m - 1] + amounts[m]) / 2;
+            console.log("Median amount:", medianAmount);
+            
+            const lastTime = sorted[sorted.length - 1].date.getTime();
+            let predictedTime = lastTime + avgInterval * MS_PER_DAY;
+            const now = Date.now();
+            if (predictedTime < now) {
+                const gap = now - predictedTime;
+                const leaps = Math.ceil(gap / (avgInterval * MS_PER_DAY));
+                predictedTime += leaps * avgInterval * MS_PER_DAY;
+            }
+            const predictedDate = new Date(predictedTime);
+            
+            nextTransaction = {
+                predictedDate: predictedDate.toISOString().slice(0, 10),
+                predictedAmount: +medianAmount.toFixed(2)
+            };
+            console.log("Next transaction prediction:", nextTransaction);
+        }
+        
+        const byDesc: Record<string, Date[]> = {}
+        allTx.forEach(t => {
+            const desc = t.description.trim().toLowerCase()
+            byDesc[desc] = byDesc[desc] || []
+            byDesc[desc].push(new Date(t.date))
+        })
+        
+        const recurring = Object.entries(byDesc)
+            .filter(([, dates]) => dates.length >= 3)
+            .map(([desc, dates]) => {
+                const sortedD = dates.sort((a,b) => a.getTime() - b.getTime())
+                const ints = []
+                for (let i = 1; i < sortedD.length; i++) {
+                    ints.push((sortedD[i].getTime() - sortedD[i-1].getTime()) / (1000*60*60*24))
+                }
+                const avgInt = ints.reduce((a,b) => a+b, 0) / ints.length
+                const last = sortedD[sortedD.length -1]
+                const next = new Date(last)
+                next.setDate(next.getDate() + Math.round(avgInt))
+                
+                const amounts = allTx.filter(t => t.description.trim().toLowerCase() === desc).map(t => t.amount)
+                const avgAmt = amounts.reduce((a,b) => a+b, 0) / amounts.length
+            
+                const result = {
+                    description: desc,
+                    predictedDate: next.toISOString().split('T')[0],
+                    predictedAmount: parseFloat(avgAmt.toFixed(2))
+                }
+                return result
+            })
+    
+        res.json({
+            categoryForecast,
+            nextTransaction,
+            recurringTransactions: recurring
+        })
+    } catch (error) {
+        console.error('Error in prediction analytics:', error)
+        res.status(500).json({ message: 'Internal server error' })
+    }
+}

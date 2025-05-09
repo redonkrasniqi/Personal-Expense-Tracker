@@ -36,3 +36,15 @@ export const deleteTransaction = async (id: string) => {
         throw error;
     }
 };
+
+const fetchPredictions = async () => {
+    const response = await apiClient.get('/transaction/predictive/analytics', {
+        withCredentials: true
+    });
+
+    return await response.data;
+}
+
+export const fetchPredictiveAnalytics = async () => {
+    return await fetchPredictions();
+}

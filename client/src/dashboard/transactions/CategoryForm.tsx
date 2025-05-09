@@ -26,11 +26,18 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ form }) => {
 
   return (
     <>
-      <Tooltip title="We automatically assign the category if left empty" placement="bottom">
-        <Button type="text" onClick={() => setCategoryVisibility(!showCategoryForm)}>
-          {showCategoryForm ? "Close Category Selection" : "Manually Select Category"}
+      {!showCategoryForm && (
+        <Tooltip title="We automatically assign the category if left empty" placement="bottom">
+          <Button type="text" onClick={() => setCategoryVisibility(true)}>
+        Manually Select Category
+          </Button>
+        </Tooltip>
+      )}
+      {showCategoryForm && (
+        <Button type="text" onClick={() => setCategoryVisibility(false)}>
+          Close Category Selection
         </Button>
-      </Tooltip>
+      )}
       {showCategoryForm && (
         <Form.Item name="category" label="Category">
           <Select placeholder="Select category" onChange={handleCategoryChange}>
