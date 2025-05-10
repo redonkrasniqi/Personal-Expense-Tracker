@@ -27,14 +27,20 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ expenses }) => {
         return moment(dateString).format('DD/MM/YYYY');
     };
 
-    const groupedData: GroupedData = expenses.reduce((acc: GroupedData, expense: Expense) => {
-        const formattedDate = formatDate(expense.date);
-        if (!acc[formattedDate]) {
-            acc[formattedDate] = 0;
-        }
-        acc[formattedDate] += expense.amount;
-        return acc;
-    }, {});
+    const groupedData: GroupedData = expenses
+        .filter((expense: Expense) => {
+            const expenseDate = moment(expense.date);
+            const threeMonthsAgo = moment().subtract(3, 'months');
+            return expenseDate.isAfter(threeMonthsAgo);
+        })
+        .reduce((acc: GroupedData, expense: Expense) => {
+            const formattedDate = formatDate(expense.date);
+            if (!acc[formattedDate]) {
+                acc[formattedDate] = 0;
+            }
+            acc[formattedDate] += expense.amount;
+            return acc;
+        }, {});
 
     const chartData = Object.keys(groupedData).map(date => ({
         date,

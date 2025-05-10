@@ -77,10 +77,6 @@ export const getAllTransactions = async(req: Request, res: Response): Promise<vo
             return;
         }
 
-        // Calculate date 3 months ago from current date
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
         const transactions = await prisma.transaction.findMany({
             select: {
                 id: true,
@@ -93,9 +89,6 @@ export const getAllTransactions = async(req: Request, res: Response): Promise<vo
             },
             where: {
                 userId: userId,
-                date: {
-                    gte: threeMonthsAgo
-                }
             }
         })
 

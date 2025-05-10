@@ -11,7 +11,6 @@ function ExpenseTable({ expenses, loading }: ExpenseTableProps) {
 
     if (loading) return <Loading />
 
-    // Sort expenses from newest to oldest
     const sortedExpenses = [...expenses].sort((a, b) => {
         const dateA = new Date(a.date || a.createdAt);
         const dateB = new Date(b.date || b.createdAt);
