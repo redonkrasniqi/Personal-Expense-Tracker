@@ -25,7 +25,7 @@ export const fetchTranscations = async () => {
 
 export const deleteTransaction = async (id: string) => {
     try {
-        const response = await apiClient.delete(`/transaction/${id}`);
+        const response = await apiClient.post(`/transaction/${id}`);
 
         if (response.status !== 204) {
             console.warn("Delete request did not return 204:", response);
