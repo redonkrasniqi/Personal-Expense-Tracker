@@ -93,12 +93,23 @@ cp client/.env.example client/.env
 ---
 
 ## Environment Variables
-| File | Key | Description |
-|------|-----|-------------|
-| \`server/.env\` | \`DATABASE_URL\` | PostgreSQL connection string |
-| | \`PORT\` | API port (default : 4000) |
-| | \`CORS_ORIGIN\` | Front-end URL (e.g. \`http://localhost:5173\`) |
-| \`client/.env\` | \`VITE_API_URL\` | Base URL of Express API |
+```
+server/.env
+
+DATABASE_URL
+NODE_ENV
+PORT
+CLIENT_URL
+JWT_SECRET
+
+DIRECT_URL
+```
+
+```
+client/.env
+REACT_APP_API_URL
+REACT_APP_ENV
+```
 
 ---
 
