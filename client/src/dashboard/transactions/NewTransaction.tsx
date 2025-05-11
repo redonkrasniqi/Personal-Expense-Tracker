@@ -1,9 +1,9 @@
-import React, { useState, createContext, useEffect } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Button, Checkbox, CheckboxChangeEvent, DatePicker } from 'antd';
+import React, { useState, createContext } from 'react';
+import { Modal, Form, Input, InputNumber, Button, Checkbox, CheckboxChangeEvent, DatePicker } from 'antd';
 import { createTransaction } from '../../services/transactionService';
 import CategoryForm from './CategoryForm';
 import moment from 'moment';
-import { useRefetch } from '../RefetchContext'; // Import useRefetch
+import { useRefetch } from '../RefetchContext';
 
 interface NewTransactionProps {
     visible: boolean;
@@ -25,7 +25,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ visible, onClose }) => 
             const values = await form.validateFields();
             const transactionData = { ...values, date, paymentMethod };
 
-            const transaction = await createTransaction(transactionData);
+            await createTransaction(transactionData);
             form.resetFields();
             setDate(moment());
             onClose();

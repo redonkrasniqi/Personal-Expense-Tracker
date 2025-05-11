@@ -37,9 +37,8 @@ Key goals:
 ---
 
 ## Directory Structure
-\`\`\`
-.
-├── client/          # React SPA (Vite)
+```
+├── client/
 │   ├── public/
 │   ├── src/
 │   └── vite.config.ts
@@ -54,8 +53,8 @@ Key goals:
 │   │   ├── services/
 │   │   └── index.ts
 │   └── tsconfig.json
-└── README.md        # (this file)
-\`\`\`
+└── README.md # (this file)
+```
 
 ---
 

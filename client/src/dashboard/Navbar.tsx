@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Profile from "./Profile";
 import LogoNavbar from "./LogoNavbar";
 import "./style/Navbar.css";

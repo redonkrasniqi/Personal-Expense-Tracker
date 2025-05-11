@@ -18,7 +18,7 @@ const Dashboard = () => {
 
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [_, setError] = useState(null);
 
     const loadExpenses = useCallback(async () => {
         setLoading(true);

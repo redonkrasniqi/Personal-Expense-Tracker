@@ -2,6 +2,7 @@ import React, { useContext, useCallback, useState, useEffect } from 'react';
 import { Form, Select, Typography, Tooltip, Button } from 'antd';
 import { CategoryVisibilityContext, CategoryVisibilitySetterContext } from './NewTransaction';
 import { fetchCategoriesList } from '../../services/transactionService';
+import Loading from '../../components/Loading';
 
 interface CategoryFormProps {
   form: any; // Add form prop
@@ -12,16 +13,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ form }) => {
   const setCategoryVisibility = useContext(CategoryVisibilitySetterContext);
 
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const [_, setCategoriesError] = useState<string | null>(null);
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
 
   const { Option } = Select;
-  
-  useEffect(() => {
-      if (showCategoryForm) {
-          loadCategories();
-      }
-  }, [showCategoryForm]);
 
   const loadCategories = useCallback(async () => {
       setCategoriesLoading(true);
@@ -37,9 +32,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ form }) => {
       }
   }, []);
 
+  useEffect(() => {
+      if (showCategoryForm) {
+          loadCategories();
+      }
+  }, [showCategoryForm, loadCategories]);
+
   const handleCategoryChange = (value: string) => { // New handler
     form.setFieldsValue({ category: value }); // Update form value
   };
+
+  if (categoriesLoading){
+    return <Loading />;
+  }
 
   return (
     <>

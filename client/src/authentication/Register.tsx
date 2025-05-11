@@ -43,7 +43,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess }) => {
         }
         try {
             const input = { email: values.email, password: values.password, fullName: values.fullName, currencyId: values.currency };
-            const response = await register(input);
+            await register(input);
             onSuccess();
         } catch (error) {
             console.error('Login failed:', error);

@@ -2,11 +2,13 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "typeRoots": [
       "./src/types",
       "./node_modules/@types"
     ]
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["tools"]
 }

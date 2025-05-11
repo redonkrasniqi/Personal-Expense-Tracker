@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/useAuth';
 import './style/Register.css';
 
@@ -12,12 +11,11 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
 
     const handleSubmit = async (values: { email: string; password: string }) => {
         try {
             const input = { email: values.email, password: values.password };
-            const response = await login(input);
+            await login(input);
             onSuccess();
         } catch (error) {
             console.error('Login failed:', error);
