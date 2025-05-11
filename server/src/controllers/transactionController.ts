@@ -13,8 +13,8 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        if (!amount || !description || !date ) {
-            res.status(400).json({ message: 'Transaction amount, description and date is required' });
+        if (!amount || !description || !date || !category ) {
+            res.status(400).json({ message: 'Transaction amount, description, category and date is required' });
             return;
         }
 
@@ -25,7 +25,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
                 amount,
                 description,
                 userId,
-                categoryId: category ? category : defaultCategoryId,
+                categoryId: category,
                 date,
                 paymentMethod
             }
@@ -472,5 +472,23 @@ export const getPredictionAnalytics = async (req: Request, res: Response): Promi
     } catch (error) {
         console.error('Error in prediction analytics:', error)
         res.status(500).json({ message: 'Internal server error' })
+    }
+}
+
+export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id
+
+        if (!userId) {
+            res.status(401).json({ message: 'User not authenticated' });
+            return;
+        }
+
+        const categories = await prisma.category.findMany()
+
+        res.json(categories)
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }

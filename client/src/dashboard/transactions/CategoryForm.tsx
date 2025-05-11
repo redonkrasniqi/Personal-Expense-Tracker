@@ -1,6 +1,7 @@
-import React, { useContext } from 'react';
+import React, { useContext, useCallback, useState, useEffect } from 'react';
 import { Form, Select, Typography, Tooltip, Button } from 'antd';
 import { CategoryVisibilityContext, CategoryVisibilitySetterContext } from './NewTransaction';
+import { fetchCategoriesList } from '../../services/transactionService';
 
 interface CategoryFormProps {
   form: any; // Add form prop
@@ -9,16 +10,32 @@ interface CategoryFormProps {
 const CategoryForm: React.FC<CategoryFormProps> = ({ form }) => {
   const showCategoryForm = useContext(CategoryVisibilityContext);
   const setCategoryVisibility = useContext(CategoryVisibilitySetterContext);
+
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const [categoriesData, setCategoriesData] = useState<any[]>([]);
+
   const { Option } = Select;
-  const categories = [
-    'Food & Drinks',
-    'Shopping',
-    'Housing',
-    'Transportation',
-    'Entertainment',
-    'Healthcare',
-    'Others',
-  ];
+  
+  useEffect(() => {
+      if (showCategoryForm) {
+          loadCategories();
+      }
+  }, [showCategoryForm]);
+
+  const loadCategories = useCallback(async () => {
+      setCategoriesLoading(true);
+      setCategoriesError(null);
+      try {
+          const resp = await fetchCategoriesList();
+          setCategoriesData(resp);
+      } catch (err: any) {
+          console.error('Error fetching predictions:', err);
+          setCategoriesError(err.message || 'Unknown error');
+      } finally {
+          setCategoriesLoading(false);
+      }
+  }, []);
 
   const handleCategoryChange = (value: string) => { // New handler
     form.setFieldsValue({ category: value }); // Update form value
@@ -41,9 +58,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ form }) => {
       {showCategoryForm && (
         <Form.Item name="category" label="Category">
           <Select placeholder="Select category" onChange={handleCategoryChange}>
-            {categories.map((category) => (
-              <Option key={category} value={category}>
-                {category}
+            {categoriesData.map((category) => (
+              <Option key={category.id} value={category.id}>
+                {category.name}
               </Option>
             ))}
           </Select>

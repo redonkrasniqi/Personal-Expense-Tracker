@@ -8,7 +8,8 @@ import {
     getTransactionsByCategory,
     getTransactionsByDateRange,
     getMonthlyTransactionSummary,
-    getPredictionAnalytics
+    getPredictionAnalytics,
+    getAllCategories
 } from '../controllers';
 import { authenticateJWT } from '../middlewares';
 
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.post('/create', authenticateJWT, createTransaction);
 router.post('/:id', authenticateJWT, deleteTransaction);
+router.get('/categories', authenticateJWT, getAllCategories);
 router.get('/', authenticateJWT, getAllTransactions);
 router.get('/:id', authenticateJWT, getTransactionById);
 router.put('/update/:id', authenticateJWT, updateTransaction);

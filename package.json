@@ -1,0 +1,25 @@
+{
+  "name": "typescript-fullstack-monorepo",
+  "version": "1.0.0",
+  "private": true,
+
+  "workspaces": [
+    "client",
+    "server"
+  ],
+
+  "scripts": {
+    "dev": "concurrently -k -n CLIENT,SERVER -c cyan,magenta \"yarn workspace client start\" \"yarn workspace server dev\"",
+    "start": "yarn dev",
+    "inst": "yarn install"
+  },
+
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  
+  "engines": {
+    "node": ">=20",
+    "yarn": ">=1.22"
+  }
+}

@@ -48,3 +48,15 @@ const fetchPredictions = async () => {
 export const fetchPredictiveAnalytics = async () => {
     return await fetchPredictions();
 }
+
+const fetchCategories = async () => {
+    const response = await apiClient.get('/transaction/categories', {
+        withCredentials: true
+    });
+
+    return await response.data;
+}
+
+export const fetchCategoriesList = async () => {
+    return await fetchCategories();
+}
